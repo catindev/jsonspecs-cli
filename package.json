@@ -1,6 +1,6 @@
 {
   "name": "jsonspecs-cli",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "private": true,
   "description": "CLI backend and local studio host for jsonspecs rules projects",
   "type": "commonjs",
@@ -20,16 +20,34 @@
     "prepublishOnly": "node scripts/prevent-direct-publish.js"
   },
   "config": {
-    "jsonspecsVersion": "2.0.0",
-    "jsonspecsGitRef": "v2.0.0"
+    "jsonspecsVersion": "2.1.0",
+    "jsonspecsGitRef": "v2.1.0"
   },
   "dependencies": {
     "express": "^5.2.1",
     "jsonspecs": "file:../jsonspecs"
   },
-  "repository": { "type": "git", "url": "git+https://github.com/catindev/jsonspecs-cli.git" },
-  "bugs": { "url": "https://github.com/catindev/jsonspecs-cli/issues" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/catindev/jsonspecs-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/catindev/jsonspecs-cli/issues"
+  },
   "homepage": "https://github.com/catindev/jsonspecs-cli#readme",
-  "keywords": ["jsonspecs", "validation", "rules-engine", "cli"],
-  "files": ["bin", "lib", "static", "index.js", "README.md", "LICENSE", "CHANGELOG.md"]
+  "keywords": [
+    "jsonspecs",
+    "validation",
+    "rules-engine",
+    "cli"
+  ],
+  "files": [
+    "bin",
+    "lib",
+    "static",
+    "index.js",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ]
 }

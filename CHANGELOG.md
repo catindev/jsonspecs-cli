@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.0 — 2026-07-12
+
+- Added required SemVer ruleset versions to manifests, snapshots, and build info.
+- Removed Markdown documentation generation from Studio and refreshed the bundled UI.
+
 ## 2.0.2 — 2026-07-12
 
 - Fixed Studio rule descriptions to prefer `catalog.fields[field].title` over `description` for human-readable field names.

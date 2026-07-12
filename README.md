@@ -33,6 +33,11 @@ Studio binds to `127.0.0.1` and uses same-origin requests by default. It is a lo
 - project-local Node operator packs in `operators/node`
 - sample payloads in `samples/`
 
+`manifest.json` requires an explicit SemVer `project.version`. `build` copies it
+to `snapshot.meta.rulesetVersion` and `build-info.json`; increment it whenever a
+rules package is released. Projects created before this field was introduced
+must add it before running `validate`, `test`, `build`, or Studio.
+
 ## Custom operators
 
 Project-local custom operators are loaded from `manifest.json`:
