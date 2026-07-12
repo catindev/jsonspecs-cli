@@ -83,12 +83,29 @@ Project-local operator packs should **not** import `deepGet` or `jsonspecs` dire
 ## Install
 
 ```bash
-npm install
-npm link
+npm install --global jsonspecs-cli
 ```
+
+## Development
+
+Until a matching `jsonspecs` release is published, both repositories are kept as sibling checkouts. This makes `npm ci` deterministic without a hand-written lockfile entry. CI checks out the engine ref pinned in `config.jsonspecsGitRef`; advance that ref deliberately when coordinated engine changes are required.
+
+```bash
+git clone https://github.com/catindev/jsonspecs.git
+git clone https://github.com/catindev/jsonspecs-cli.git
+cd jsonspecs-cli
+npm ci
+npm run verify
+```
+
+`npm run test:pack` creates real tarballs for both packages, installs them together in a clean CommonJS consumer, and runs the installed CLI through `init`, `validate`, `test`, and `build`.
+
+## Release order
+
+Publish the version in `config.jsonspecsVersion` from the `jsonspecs` repository first. A `v*` tag in this repository then runs tests, downloads that exact engine release, builds a clean CLI tarball whose dependency is `^<jsonspecsVersion>`, repeats the pack/install smoke test, publishes to npm, and creates the GitHub release. Direct publication from the source checkout is blocked by `private: true` and a `prepublishOnly` guard because its dependency intentionally points at the sibling repository.
 
 ## Test
 
 ```bash
-npm test
+npm run verify
 ```

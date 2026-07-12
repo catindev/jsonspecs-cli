@@ -8,15 +8,32 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: jsonspecs-cli
     strategy:
       matrix:
         node-version: [20, 22]
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout jsonspecs-cli
+        uses: actions/checkout@v4
+        with:
+          path: jsonspecs-cli
+      - name: Resolve jsonspecs source ref
+        id: jsonspecs
+        working-directory: jsonspecs-cli
+        run: echo "ref=$(node -p 'require("./package.json").config.jsonspecsGitRef')" >> "$GITHUB_OUTPUT"
+      - name: Checkout matching jsonspecs source
+        uses: actions/checkout@v4
+        with:
+          repository: catindev/jsonspecs
+          ref: ${{ steps.jsonspecs.outputs.ref }}
+          path: jsonspecs
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
+          cache-dependency-path: jsonspecs-cli/package-lock.json
       - run: npm ci
       - run: npm test
-      - run: npm pack --dry-run
+      - run: npm run test:pack

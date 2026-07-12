@@ -38,7 +38,11 @@ test('build writes snapshot and build-info', () => {
   assert.equal(fs.existsSync(path.join(root, 'demo', 'dist', 'snapshot.json')), true);
   assert.equal(fs.existsSync(path.join(root, 'demo', 'dist', 'build-info.json')), true);
   const snapshot = require(path.join(root, 'demo', 'dist', 'snapshot.json'));
+  const buildInfo = require(path.join(root, 'demo', 'dist', 'build-info.json'));
   assert.equal(compileSnapshot(snapshot).kind, 'prepared-jsonspecs');
+  assert.equal(buildInfo.sourceHash, snapshot.sourceHash);
+  assert.equal(buildInfo.snapshotFormat, snapshot.format);
+  assert.equal(buildInfo.snapshotFormatVersion, snapshot.formatVersion);
 });
 
 test('test executes generated positive and negative samples', () => {

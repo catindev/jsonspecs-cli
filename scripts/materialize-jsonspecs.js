@@ -1,0 +1,42 @@
+#!/usr/bin/env node
+"use strict";
+
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
+const { spawnSync } = require("node:child_process");
+const { packageJsonspecsVersion, readJson, runNpm } = require("./release-package");
+
+const root = path.resolve(__dirname, "..");
+const target = path.resolve(process.argv[2] || path.join(root, "..", "jsonspecs"));
+const packageJson = readJson(path.join(root, "package.json"));
+const version = packageJsonspecsVersion(packageJson);
+const temp = fs.mkdtempSync(path.join(os.tmpdir(), "jsonspecs-cli-upstream-"));
+
+try {
+  const raw = runNpm([
+    "pack",
+    "--json",
+    "--ignore-scripts",
+    "--pack-destination",
+    temp,
+    `jsonspecs@${version}`,
+  ]);
+  const result = JSON.parse(raw)[0];
+  if (!result || !result.filename) throw new Error("npm pack did not report the jsonspecs tarball");
+
+  fs.rmSync(target, { recursive: true, force: true });
+  fs.mkdirSync(target, { recursive: true });
+  const tar = spawnSync("tar", ["-xzf", path.join(temp, result.filename), "--strip-components=1", "-C", target], {
+    encoding: "utf8",
+  });
+  if (tar.status !== 0) throw new Error(`failed to extract jsonspecs: ${tar.stderr || tar.stdout}`);
+
+  const installed = readJson(path.join(target, "package.json"));
+  if (installed.name !== "jsonspecs" || installed.version !== version) {
+    throw new Error(`registry returned ${installed.name}@${installed.version}, expected jsonspecs@${version}`);
+  }
+  console.log(`[jsonspecs-cli] materialized published jsonspecs@${version} at ${target}`);
+} finally {
+  fs.rmSync(temp, { recursive: true, force: true });
+}

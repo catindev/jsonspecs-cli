@@ -1,16 +1,49 @@
 name: Release
+
 on:
-  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   publish:
     runs-on: ubuntu-latest
-    permissions: { contents: read, id-token: write }
+    permissions:
+      contents: write
+      id-token: write
+    defaults:
+      run:
+        working-directory: jsonspecs-cli
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout jsonspecs-cli
+        uses: actions/checkout@v4
+        with:
+          path: jsonspecs-cli
       - uses: actions/setup-node@v4
-        with: { node-version: 22, registry-url: "https://registry.npmjs.org" }
-      - run: npm ci
-      - run: npm test
-      - run: npm pack --dry-run
-      - run: npm publish --provenance --access public
-        env: { NODE_AUTH_TOKEN: "${{ secrets.NPM_TOKEN }}" }
+        with:
+          node-version: 22
+          registry-url: "https://registry.npmjs.org"
+          cache: npm
+          cache-dependency-path: jsonspecs-cli/package-lock.json
+      - name: Verify tag and package version
+        run: node scripts/verify-release-tag.js "$GITHUB_REF_NAME"
+      - name: Materialize the published jsonspecs dependency
+        run: node scripts/materialize-jsonspecs.js ../jsonspecs
+      - name: Install exact source dependencies
+        run: npm ci
+      - name: Verify source and packed consumer
+        run: npm run verify
+      - name: Build publishable tarball
+        run: npm run pack:release -- --output "$RUNNER_TEMP/release"
+      - name: Publish npm package
+        run: npm publish "$RUNNER_TEMP/release/jsonspecs-cli-${GITHUB_REF_NAME#v}.tgz" --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Create GitHub release
+        run: gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes "$RUNNER_TEMP/release/jsonspecs-cli-${GITHUB_REF_NAME#v}.tgz"
+        env:
+          GH_TOKEN: ${{ github.token }}
