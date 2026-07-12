@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.1 — 2026-07-12
+
+- Fixed Studio SPA deep-link fallback when the CLI is installed under a hidden parent directory such as `.nvm`.
+
 ## 2.0.0 — 2026-07-12
 
 - Added deterministic versioned snapshots and `jsonspecs test`.

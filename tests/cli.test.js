@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const express = require('express');
 
 const runInit = require('../lib/commands/init');
 const runValidate = require('../lib/commands/validate');
@@ -53,12 +54,24 @@ test('test executes generated positive and negative samples', () => {
 test('studio boots through introspection API on loopback', async (t) => {
   const root = tmpdir(); runInit('demo', root); const projectRoot = path.join(root, 'demo');
   const manifestFile = path.join(projectRoot, 'manifest.json'); const manifest = JSON.parse(fs.readFileSync(manifestFile)); manifest.studio.port = 0; fs.writeFileSync(manifestFile, JSON.stringify(manifest));
+  const sendFileCalls = [];
+  const originalSendFile = express.response.sendFile;
+  express.response.sendFile = function sendFile(file, options) {
+    sendFileCalls.push({ file, options });
+    return this.type('html').send('<!doctype html><title>jsonspecs studio</title>');
+  };
+  t.after(() => { express.response.sendFile = originalSendFile; });
   const project = require('../lib/project').resolveProject(projectRoot);
   const runtime = require('../lib/studio-server').startStudio(project); t.after(() => { runtime.server.close(); for (const watcher of runtime.ctx.watchers) watcher.close(); });
   await new Promise((resolve) => runtime.server.listening ? resolve() : runtime.server.once('listening', resolve));
   const health = await fetch(`http://127.0.0.1:${runtime.server.address().port}/health`).then((response) => response.json());
   assert.equal(health.ok, true);
   assert.equal(Object.hasOwn(runtime.ctx.compiled, 'registry'), false);
+  const deepLink = await fetch(`http://127.0.0.1:${runtime.server.address().port}/rules/library.order.amount_required`);
+  assert.equal(deepLink.status, 200);
+  assert.equal(sendFileCalls.length, 1);
+  assert.equal(sendFileCalls[0].file, 'index.html');
+  assert.equal(sendFileCalls[0].options.root, path.join(__dirname, '..', 'static'));
 });
 
 test('validate succeeds with project-local custom operators', () => {
