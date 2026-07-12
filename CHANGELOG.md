@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.1 — 2026-07-12
+
+- Fixed Studio condition pages to render the condition predicate and executed checks as separate blocks.
+- Fixed Studio comparison-rule descriptions to show the second field label.
+- Replaced playground sample buttons with a compact dropdown.
+
 ## 2.1.0 — 2026-07-12
 
 - Added required SemVer ruleset versions to manifests, snapshots, and build info.

@@ -1,6 +1,6 @@
 {
   "name": "jsonspecs-cli",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "private": true,
   "description": "CLI backend and local studio host for jsonspecs rules projects",
   "type": "commonjs",

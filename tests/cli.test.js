@@ -10,6 +10,7 @@ const runValidate = require('../lib/commands/validate');
 const runBuild = require('../lib/commands/build');
 const runTest = require('../lib/commands/test');
 const { compileSnapshot } = require('jsonspecs');
+const { enrichArtifactForUi } = require('../lib/studio-helpers');
 
 function tmpdir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'jsonspecs-cli-'));
@@ -141,4 +142,36 @@ test('validate succeeds with project-local custom operators', () => {
   const loaded = require('../lib/loader-fs').loadArtifactsFromDir(path.join(projectRoot, 'rules'));
   const prepared = engine.compile(loaded.artifacts, { sources: loaded.sources });
   assert.equal(engine.runPipeline(prepared, { pipelineId: 'entrypoints.order.validation', payload: { order: { amount: -1 } } }).status, 'ERROR');
+});
+
+test('Studio exposes comparison-field metadata and condition steps', () => {
+  const artifacts = new Map([
+    ['library.compare', { id: 'library.compare', type: 'rule', field: 'order.amount', value_field: '$context.minimum' }],
+    ['library.present', { id: 'library.present', type: 'rule', description: 'Сумма заполнена' }],
+    ['library.condition', { id: 'library.condition', type: 'condition' }],
+  ]);
+  const view = {
+    getArtifact(id) { return artifacts.get(id) || null; },
+    getConditionModel(id) {
+      return id === 'library.condition'
+        ? { when: { mode: 'single', predId: 'library.present' }, steps: [{ kind: 'rule', ruleId: 'library.compare' }] }
+        : null;
+    },
+    getPipelineSteps() { return null; },
+  };
+  const manifest = {
+    fields: { '$context.minimum': { title: 'Минимальная сумма' } },
+    artifacts: { 'library.compare': { title: 'Сравнение сумм' } },
+    operators: {},
+    entrypoints: {},
+  };
+
+  const rule = enrichArtifactForUi('library.compare', view, manifest);
+  assert.equal(rule.display.valueField.title, 'Минимальная сумма');
+  const condition = enrichArtifactForUi('library.condition', view, manifest);
+  assert.match(condition.compiled.whenHtml, /Сумма заполнена/);
+  assert.match(condition.compiled.whenHtml, /library\.present/);
+  assert.equal(condition.compiled.steps.length, 1);
+  assert.equal(condition.compiled.steps[0].id, 'library.compare');
+  assert.equal(condition.compiled.steps[0].title, 'Сравнение сумм');
 });
