@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.2 — 2026-07-12
+
+- Refreshed README and package metadata for the current ruleset version, snapshot, Studio, and release workflow.
+- Added a testing guide covering current gates and recommended follow-up coverage.
+- Bundled the refreshed Studio UI with fixed nested condition-tree styling.
+
 ## 2.1.1 — 2026-07-12
 
 - Fixed Studio condition pages to render the condition predicate and executed checks as separate blocks.
