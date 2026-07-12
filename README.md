@@ -1,6 +1,6 @@
 # JSONSpecs CLI
 
-[![CI](https://github.com/catindev/jsonscpecs-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/catindev/jsonscpecs-cli/actions)
+[![CI](https://github.com/catindev/jsonspecs-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/catindev/jsonspecs-cli/actions)
 [![npm](https://img.shields.io/npm/v/jsonspecs-cli)](https://www.npmjs.com/package/jsonspecs-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node 20+](https://img.shields.io/badge/Node-20%2B-green)](https://nodejs.org/)
@@ -13,11 +13,16 @@ CLI backend and local studio host for [jsonspecs](https://www.npmjs.com/package/
 - `jsonspecs studio`
 - `jsonspecs validate`
 - `jsonspecs build`
+- `jsonspecs test`
+
+`build` writes a deterministic, hash-verified snapshot for `jsonspecs.compileSnapshot()`. `test` executes every JSON sample: `expect.status` is exact, `expect.issues` uses subset matching, and `expect.exact: true` rejects additional issues.
 
 ## Studio architecture
 
 `jsonspecs-cli` serves a built SPA from `/` and exposes a JSON API under `/api/*`.
 The current bundled frontend is expected to be built from the separate `jsonspecs-studio-ui` project and copied into `static/`.
+
+Studio binds to `127.0.0.1` and uses same-origin requests by default. It is a local development tool and must not be exposed as a production service.
 
 ## Runtime model
 
@@ -47,10 +52,10 @@ module.exports = {
   check: {
     amount_gt_zero(rule, ctx) {
       const got = ctx.get(rule.field);
-      if (!got.ok()) return { ok: false, actual: undefined };
+      if (!got.ok) return { status: 'FAIL', actual: undefined };
 
       const n = Number(got.value);
-      return { ok: Number.isFinite(n) && n > 0, actual: got.value };
+      return { status: Number.isFinite(n) && n > 0 ? 'OK' : 'FAIL', actual: got.value };
     },
   },
   predicate: {},
@@ -78,12 +83,29 @@ Project-local operator packs should **not** import `deepGet` or `jsonspecs` dire
 ## Install
 
 ```bash
-npm install
-npm link
+npm install --global jsonspecs-cli
 ```
+
+## Development
+
+Until a matching `jsonspecs` release is published, both repositories are kept as sibling checkouts. This makes `npm ci` deterministic without a hand-written lockfile entry. CI checks out the engine ref pinned in `config.jsonspecsGitRef`; advance that ref deliberately when coordinated engine changes are required.
+
+```bash
+git clone https://github.com/catindev/jsonspecs.git
+git clone https://github.com/catindev/jsonspecs-cli.git
+cd jsonspecs-cli
+npm ci
+npm run verify
+```
+
+`npm run test:pack` creates real tarballs for both packages, installs them together in a clean CommonJS consumer, and runs the installed CLI through `init`, `validate`, `test`, and `build`.
+
+## Release order
+
+Publish the version in `config.jsonspecsVersion` from the `jsonspecs` repository first. A `v*` tag in this repository then runs tests, downloads that exact engine release, builds a clean CLI tarball whose dependency is `^<jsonspecsVersion>`, repeats the pack/install smoke test, publishes to npm, and creates the GitHub release. Direct publication from the source checkout is blocked by `private: true` and a `prepublishOnly` guard because its dependency intentionally points at the sibling repository.
 
 ## Test
 
 ```bash
-npm test
+npm run verify
 ```

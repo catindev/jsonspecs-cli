@@ -1,6 +1,7 @@
 {
   "name": "jsonspecs-cli",
-  "version": "1.1.0",
+  "version": "2.0.0",
+  "private": true,
   "description": "CLI backend and local studio host for jsonspecs rules projects",
   "type": "commonjs",
   "bin": {
@@ -12,10 +13,23 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "test:pack": "node scripts/pack-smoke.js",
+    "verify": "npm test && npm run test:pack",
+    "pack:release": "node scripts/create-release-package.js",
+    "prepublishOnly": "node scripts/prevent-direct-publish.js"
+  },
+  "config": {
+    "jsonspecsVersion": "2.0.0",
+    "jsonspecsGitRef": "v2.0.0"
   },
   "dependencies": {
     "express": "^5.2.1",
-    "jsonspecs": "^1.1.0"
-  }
+    "jsonspecs": "file:../jsonspecs"
+  },
+  "repository": { "type": "git", "url": "git+https://github.com/catindev/jsonspecs-cli.git" },
+  "bugs": { "url": "https://github.com/catindev/jsonspecs-cli/issues" },
+  "homepage": "https://github.com/catindev/jsonspecs-cli#readme",
+  "keywords": ["jsonspecs", "validation", "rules-engine", "cli"],
+  "files": ["bin", "lib", "static", "index.js", "README.md", "LICENSE", "CHANGELOG.md"]
 }
