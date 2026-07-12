@@ -40,7 +40,7 @@ jobs:
       - name: Build publishable tarball
         run: npm run pack:release -- --output "$RUNNER_TEMP/release"
       - name: Publish npm package
-        run: npm publish "$RUNNER_TEMP/release/jsonspecs-cli-${GITHUB_REF_NAME#v}.tgz" --provenance --access public
+        run: npm publish "$RUNNER_TEMP/release/jsonspecs-cli-${GITHUB_REF_NAME#v}.tgz" --provenance --access public --tag next
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Create GitHub release
