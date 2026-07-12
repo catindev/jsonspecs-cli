@@ -19,6 +19,7 @@ test('init creates a scaffolded rules project', () => {
   const root = tmpdir();
   runInit('demo', root);
   assert.equal(fs.existsSync(path.join(root, 'demo', 'manifest.json')), true);
+  assert.equal(require(path.join(root, 'demo', 'manifest.json')).project.version, '0.1.0');
   assert.equal(fs.existsSync(path.join(root, 'demo', 'rules', 'library', 'order_amount_required.json')), true);
   assert.equal(fs.existsSync(path.join(root, 'demo', 'samples', 'order.ok.json')), true);
   assert.equal(fs.existsSync(path.join(root, 'demo', 'operators', 'node', 'index.js')), true);
@@ -29,6 +30,17 @@ test('validate succeeds for scaffolded project', () => {
   runInit('demo', root);
   const code = runValidate(path.join(root, 'demo'));
   assert.equal(code, 0);
+});
+
+test('manifest requires an explicit semantic ruleset version', () => {
+  const root = tmpdir();
+  runInit('demo', root);
+  const projectRoot = path.join(root, 'demo');
+  const manifestFile = path.join(projectRoot, 'manifest.json');
+  const manifest = JSON.parse(fs.readFileSync(manifestFile, 'utf8'));
+  manifest.project.version = '01.0.0';
+  fs.writeFileSync(manifestFile, JSON.stringify(manifest));
+  assert.throws(() => require('../lib/project').resolveProject(projectRoot), /project\.version must be an explicit semantic version/);
 });
 
 test('build writes snapshot and build-info', () => {
@@ -44,6 +56,11 @@ test('build writes snapshot and build-info', () => {
   assert.equal(buildInfo.sourceHash, snapshot.sourceHash);
   assert.equal(buildInfo.snapshotFormat, snapshot.format);
   assert.equal(buildInfo.snapshotFormatVersion, snapshot.formatVersion);
+  assert.equal(snapshot.meta.rulesetVersion, '0.1.0');
+  assert.equal(buildInfo.rulesetVersion, snapshot.meta.rulesetVersion);
+  const result = require('jsonspecs').createEngine({ operators: require('jsonspecs').Operators })
+    .runPipeline(compileSnapshot(snapshot), { payload: { order: { amount: 1500 } } });
+  assert.equal(result.ruleset.rulesetVersion, '0.1.0');
 });
 
 test('test executes generated positive and negative samples', () => {
