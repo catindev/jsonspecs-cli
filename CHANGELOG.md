@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.2 — 2026-07-12
+
+- Fixed Studio rule descriptions to prefer `catalog.fields[field].title` over `description` for human-readable field names.
+
 ## 2.0.1 — 2026-07-12
 
 - Fixed Studio SPA deep-link fallback when the CLI is installed under a hidden parent directory such as `.nvm`.
