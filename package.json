@@ -1,6 +1,6 @@
 {
   "name": "jsonspecs-cli",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "private": true,
   "description": "Authoring, validation, snapshot build, sample-test, and local Studio CLI for jsonspecs projects",
   "type": "commonjs",
@@ -20,8 +20,8 @@
     "prepublishOnly": "node scripts/prevent-direct-publish.js"
   },
   "config": {
-    "jsonspecsVersion": "2.3.2",
-    "jsonspecsGitRef": "v2.3.2"
+    "jsonspecsVersion": "2.3.3",
+    "jsonspecsGitRef": "v2.3.3"
   },
   "dependencies": {
     "express": "^5.2.1",
@@ -29,12 +29,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/catindev/jsonspecs-cli.git"
+    "url": "git+https://github.com/jsonspecs/cli.git"
   },
   "bugs": {
-    "url": "https://github.com/catindev/jsonspecs-cli/issues"
+    "url": "https://github.com/jsonspecs/cli/issues"
   },
-  "homepage": "https://github.com/catindev/jsonspecs-cli#readme",
+  "homepage": "https://github.com/jsonspecs/cli#readme",
   "keywords": [
     "jsonspecs",
     "validation",

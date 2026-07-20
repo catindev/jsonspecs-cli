@@ -1,6 +1,6 @@
 # JSONSpecs CLI
 
-[![CI](https://github.com/catindev/jsonspecs-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/catindev/jsonspecs-cli/actions)
+[![CI](https://github.com/jsonspecs/cli/actions/workflows/ci.yml/badge.svg)](https://github.com/jsonspecs/cli/actions)
 [![npm](https://img.shields.io/npm/v/jsonspecs-cli)](https://www.npmjs.com/package/jsonspecs-cli)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node 20+](https://img.shields.io/badge/Node-20%2B-green)](https://nodejs.org/)
@@ -206,8 +206,8 @@ The bundled frontend is built from the separate `jsonspecs-studio-ui` repository
 The source checkout intentionally depends on a sibling `../jsonspecs` checkout:
 
 ```bash
-git clone https://github.com/catindev/jsonspecs.git
-git clone https://github.com/catindev/jsonspecs-cli.git
+git clone https://github.com/jsonspecs/core.git jsonspecs
+git clone https://github.com/jsonspecs/cli.git jsonspecs-cli
 cd jsonspecs-cli
 npm ci
 npm run verify
@@ -218,8 +218,8 @@ npm run verify
 ```json
 {
   "config": {
-    "jsonspecsVersion": "2.3.2",
-    "jsonspecsGitRef": "v2.3.2"
+    "jsonspecsVersion": "2.3.3",
+    "jsonspecsGitRef": "v2.3.3"
   }
 }
 ```
@@ -246,6 +246,6 @@ Current coverage and recommended additions are tracked in [TESTING.md](./TESTING
 
 The tag workflow downloads the exact engine release, builds a sanitized registry-safe tarball whose dependency is `^<jsonspecsVersion>`, repeats the pack/install smoke test, publishes to npm, and creates a GitHub release.
 
-Publishing uses npm trusted publishing from GitHub Actions. Configure npm package `jsonspecs-cli` with owner/repo `catindev/jsonspecs-cli`, workflow filename `release.yml`, and allowed action `npm publish`; no `NPM_TOKEN`/`NODE_AUTH_TOKEN` is used.
+Publishing uses npm trusted publishing from GitHub Actions. Configure npm package `jsonspecs-cli` with owner/repo `jsonspecs/cli`, workflow filename `release.yml`, allowed action `npm publish`, and no environment. The release job runs on a GitHub-hosted runner with `id-token: write`, uses Node 24 and npm 11.18.0, and does not use `NPM_TOKEN`/`NODE_AUTH_TOKEN`. Trusted publishing generates provenance automatically; `--provenance` is not required.
 
 Direct publication from the source checkout is blocked by `private: true` and a `prepublishOnly` guard.

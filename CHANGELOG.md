@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.2 — 2026-07-20
+
+- Updated package metadata, badges, and release documentation for the `jsonspecs/cli` repository transfer.
+- Switched CI to check out the coordinated engine from `jsonspecs/core`.
+- Raised the coordinated `jsonspecs` engine release to 2.3.3.
+
 ## 2.2.1 — 2026-07-20
 
 - Standardized successful JSON output for `validate` and `build` with always-present `warningCount`, `diagnosticCount`, and `diagnostics`.
