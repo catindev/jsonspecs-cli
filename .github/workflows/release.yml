@@ -20,15 +20,16 @@ jobs:
         working-directory: jsonspecs-cli
     steps:
       - name: Checkout jsonspecs-cli
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: jsonspecs-cli
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           registry-url: "https://registry.npmjs.org"
-          cache: npm
-          cache-dependency-path: jsonspecs-cli/package-lock.json
+          package-manager-cache: false
+      - name: Use npm with trusted publishing support
+        run: npm install --global npm@11.18.0
       - name: Verify tag and package version
         run: node scripts/verify-release-tag.js "$GITHUB_REF_NAME"
       - name: Materialize the published jsonspecs dependency
@@ -40,9 +41,7 @@ jobs:
       - name: Build publishable tarball
         run: npm run pack:release -- --output "$RUNNER_TEMP/release"
       - name: Publish npm package
-        run: npm publish "$RUNNER_TEMP/release/jsonspecs-cli-${GITHUB_REF_NAME#v}.tgz" --provenance --access public --tag next
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish "$RUNNER_TEMP/release/jsonspecs-cli-${GITHUB_REF_NAME#v}.tgz" --access public --tag latest
       - name: Create GitHub release
         run: gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes "$RUNNER_TEMP/release/jsonspecs-cli-${GITHUB_REF_NAME#v}.tgz"
         env:

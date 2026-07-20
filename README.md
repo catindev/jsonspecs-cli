@@ -245,4 +245,6 @@ Current coverage and recommended additions are tracked in [TESTING.md](./TESTING
 
 The tag workflow downloads the exact engine release, builds a sanitized registry-safe tarball whose dependency is `^<jsonspecsVersion>`, repeats the pack/install smoke test, publishes to npm, and creates a GitHub release.
 
+Publishing uses npm trusted publishing from GitHub Actions. Configure npm package `jsonspecs-cli` with owner/repo `catindev/jsonspecs-cli`, workflow filename `release.yml`, and allowed action `npm publish`; no `NPM_TOKEN`/`NODE_AUTH_TOKEN` is used.
+
 Direct publication from the source checkout is blocked by `private: true` and a `prepublishOnly` guard.
