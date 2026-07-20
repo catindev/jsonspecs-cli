@@ -16,7 +16,8 @@ jobs:
         node-version: [20, 22]
     steps:
       - name: Checkout jsonspecs-cli
-        uses: actions/checkout@v4
+        # actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           path: jsonspecs-cli
       - name: Resolve jsonspecs source ref
@@ -24,12 +25,14 @@ jobs:
         working-directory: jsonspecs-cli
         run: echo "ref=$(node -p 'require("./package.json").config.jsonspecsGitRef')" >> "$GITHUB_OUTPUT"
       - name: Checkout matching jsonspecs source
-        uses: actions/checkout@v4
+        # actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           repository: catindev/jsonspecs
           ref: ${{ steps.jsonspecs.outputs.ref }}
           path: jsonspecs
-      - uses: actions/setup-node@v4
+      # actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
