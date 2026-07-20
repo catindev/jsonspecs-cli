@@ -1,9 +1,14 @@
 # Changelog
 
+## 2.2.3 — 2026-07-20
+
+- Switched CI and development instructions to the renamed `jsonspecs/rules` engine repository.
+- Raised the coordinated `jsonspecs` engine release to 2.3.4.
+
 ## 2.2.2 — 2026-07-20
 
 - Updated package metadata, badges, and release documentation for the `jsonspecs/cli` repository transfer.
-- Switched CI to check out the coordinated engine from `jsonspecs/core`.
+- Switched CI to check out the coordinated engine from the GitHub organization repository.
 - Raised the coordinated `jsonspecs` engine release to 2.3.3.
 
 ## 2.2.1 — 2026-07-20

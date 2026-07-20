@@ -28,7 +28,7 @@ jobs:
         # actions/checkout@v4
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
-          repository: jsonspecs/core
+          repository: jsonspecs/rules
           ref: ${{ steps.jsonspecs.outputs.ref }}
           path: jsonspecs
       # actions/setup-node@v4

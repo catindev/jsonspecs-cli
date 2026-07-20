@@ -206,7 +206,7 @@ The bundled frontend is built from the separate `jsonspecs-studio-ui` repository
 The source checkout intentionally depends on a sibling `../jsonspecs` checkout:
 
 ```bash
-git clone https://github.com/jsonspecs/core.git jsonspecs
+git clone https://github.com/jsonspecs/rules.git jsonspecs
 git clone https://github.com/jsonspecs/cli.git jsonspecs-cli
 cd jsonspecs-cli
 npm ci
@@ -218,8 +218,8 @@ npm run verify
 ```json
 {
   "config": {
-    "jsonspecsVersion": "2.3.3",
-    "jsonspecsGitRef": "v2.3.3"
+    "jsonspecsVersion": "2.3.4",
+    "jsonspecsGitRef": "v2.3.4"
   }
 }
 ```
