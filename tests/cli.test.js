@@ -35,6 +35,21 @@ function captureConsole(fn) {
   return { value, stdout: stdout.join('\n'), stderr: stderr.join('\n') };
 }
 
+function addRegexWarningRule(projectRoot) {
+  fs.writeFileSync(path.join(projectRoot, 'rules', 'library', 'order_code_redos_warning.json'), JSON.stringify({
+    id: 'library.order.code_redos_warning',
+    type: 'rule',
+    description: 'warning regex',
+    role: 'check',
+    operator: 'matches_regex',
+    level: 'WARNING',
+    code: 'ORDER.CODE.WARNING',
+    message: 'warning regex',
+    field: 'order.code',
+    value: '^(a+)+$'
+  }, null, 2));
+}
+
 test('init creates a scaffolded rules project', () => {
   const root = tmpdir();
   runInit('demo', root);
@@ -76,11 +91,97 @@ test('build writes snapshot and build-info', () => {
   assert.equal(buildInfo.sourceHash, snapshot.sourceHash);
   assert.equal(buildInfo.snapshotFormat, snapshot.format);
   assert.equal(buildInfo.snapshotFormatVersion, snapshot.formatVersion);
+  assert.equal(buildInfo.warnings, 0);
   assert.equal(snapshot.meta.rulesetVersion, '0.1.0');
   assert.equal(buildInfo.rulesetVersion, snapshot.meta.rulesetVersion);
   const result = require('jsonspecs').createEngine({ operators: require('jsonspecs').Operators })
     .runPipeline(compileSnapshot(snapshot), { payload: { order: { amount: 1500 } } });
   assert.equal(result.ruleset.rulesetVersion, '0.1.0');
+});
+
+test('validate prints warnings on success and can fail on warnings', () => {
+  const root = tmpdir();
+  runInit('demo', root);
+  const projectRoot = path.join(root, 'demo');
+  addRegexWarningRule(projectRoot);
+
+  const human = captureConsole(() => runValidate(projectRoot, { color: 'never' }));
+  assert.equal(human.value, 0);
+  assert.match(human.stdout, /validate OK/);
+  assert.match(human.stdout, /3 artifacts, 1 warnings/);
+  assert.match(human.stderr, /validation warnings/);
+  assert.match(human.stderr, /REGEX_REDOS_RISK/);
+
+  const json = captureConsole(() => runValidate(projectRoot, { json: true }));
+  const parsed = JSON.parse(json.stdout);
+  assert.equal(json.value, 0);
+  assert.equal(parsed.ok, true);
+  assert.equal(parsed.artifactCount, 3);
+  assert.equal(parsed.warningCount, 1);
+  assert.equal(parsed.diagnostics[0].code, 'REGEX_REDOS_RISK');
+
+  const failed = captureConsole(() => runValidate(projectRoot, { failOnWarning: true, color: 'never' }));
+  assert.equal(failed.value, 1);
+  assert.match(failed.stderr, /REGEX_REDOS_RISK/);
+  assert.match(failed.stderr, /validate failed/);
+  assert.match(failed.stderr, /--fail-on-warning/);
+
+  const cleanRoot = tmpdir();
+  runInit('clean', cleanRoot);
+  assert.equal(runValidate(path.join(cleanRoot, 'clean'), { failOnWarning: true }), 0);
+});
+
+test('build prints warnings, records warning count, and fail-on-warning skips writes', () => {
+  {
+    const root = tmpdir();
+    runInit('demo', root);
+    const projectRoot = path.join(root, 'demo');
+    addRegexWarningRule(projectRoot);
+
+    const human = captureConsole(() => runBuild(projectRoot, { color: 'never' }));
+    assert.equal(human.value, 0);
+    assert.match(human.stdout, /build OK/);
+    assert.match(human.stdout, /warnings: 1/);
+    assert.match(human.stderr, /build warnings/);
+    assert.match(human.stderr, /REGEX_REDOS_RISK/);
+    const buildInfo = require(path.join(projectRoot, 'dist', 'build-info.json'));
+    assert.equal(buildInfo.warnings, 1);
+  }
+
+  {
+    const root = tmpdir();
+    runInit('demo', root);
+    const projectRoot = path.join(root, 'demo');
+    addRegexWarningRule(projectRoot);
+
+    const json = captureConsole(() => runBuild(projectRoot, { json: true }));
+    const parsed = JSON.parse(json.stdout);
+    assert.equal(json.value, 0);
+    assert.equal(parsed.ok, true);
+    assert.equal(parsed.warningCount, 1);
+    assert.equal(parsed.diagnostics[0].code, 'REGEX_REDOS_RISK');
+  }
+
+  {
+    const root = tmpdir();
+    runInit('demo', root);
+    const projectRoot = path.join(root, 'demo');
+    addRegexWarningRule(projectRoot);
+
+    const failed = captureConsole(() => runBuild(projectRoot, { failOnWarning: true, color: 'never' }));
+    assert.equal(failed.value, 1);
+    assert.match(failed.stderr, /REGEX_REDOS_RISK/);
+    assert.match(failed.stderr, /build failed/);
+    assert.match(failed.stderr, /--fail-on-warning/);
+    assert.equal(fs.existsSync(path.join(projectRoot, 'dist', 'snapshot.json')), false);
+    assert.equal(fs.existsSync(path.join(projectRoot, 'dist', 'build-info.json')), false);
+  }
+
+  {
+    const root = tmpdir();
+    runInit('clean', root);
+    assert.equal(runBuild(path.join(root, 'clean'), { failOnWarning: true }), 0);
+  }
 });
 
 test('test executes generated positive and negative samples', () => {

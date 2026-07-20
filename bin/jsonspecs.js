@@ -11,8 +11,8 @@ function printHelp(options = {}) {
 ${c.bold('Commands:')}
   jsonspecs init <project-name> [--color auto|always|never]
   jsonspecs studio [--host HOST] [--port PORT] [--no-open] [--color auto|always|never]
-  jsonspecs build [--json] [--quiet] [--color auto|always|never]
-  jsonspecs validate [--json] [--quiet] [--color auto|always|never]
+  jsonspecs build [--json] [--quiet] [--fail-on-warning] [--color auto|always|never]
+  jsonspecs validate [--json] [--quiet] [--fail-on-warning] [--color auto|always|never]
   jsonspecs test [--json] [--quiet] [--color auto|always|never]
 
 ${c.bold('Color:')}
@@ -24,7 +24,12 @@ ${c.bold('Color:')}
 (async function main() {
   const [, , command, ...args] = process.argv;
   try {
-    const flags = { json: args.includes('--json'), quiet: args.includes('--quiet'), color: colorModeFromArgs(args) };
+    const flags = {
+      json: args.includes('--json'),
+      quiet: args.includes('--quiet'),
+      failOnWarning: args.includes('--fail-on-warning'),
+      color: colorModeFromArgs(args)
+    };
     switch (command) {
       case 'init':
         return require('../lib/commands/init')(args[0], process.cwd(), flags);

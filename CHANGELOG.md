@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.2.0 — 2026-07-20
+
+- Printed warning diagnostics for successful `validate` and `build` runs.
+- Added `--fail-on-warning` for `validate` and `build`.
+- Included warning diagnostics in JSON output and warning counts in build info.
+- Raised the coordinated `jsonspecs` engine release to 2.3.1.
+
 ## 2.1.3 — 2026-07-13
 
 - Added colorized human CLI output for `init`, `validate`, `test`, `build`, Studio logs, and help.

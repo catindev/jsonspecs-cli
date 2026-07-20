@@ -26,15 +26,20 @@ jsonspecs studio
 | Command | Purpose |
 | --- | --- |
 | `init` | Creates a minimal rules project with manifest, example rules, samples, local operator pack, and output directories. |
-| `validate` | Loads artifacts from `rules/` and reports structured diagnostics from the `jsonspecs` compiler. |
+| `validate` | Loads artifacts from `rules/` and reports structured diagnostics from the `jsonspecs` compiler, including success-time warnings. |
 | `test` | Runs every JSON sample in `samples/` against the compiled project. |
-| `build` | Writes deterministic `snapshot.json` and `build-info.json` into `dist/`. |
+| `build` | Writes deterministic `snapshot.json` and `build-info.json` into `dist/` after validation, including warning counts. |
 | `studio` | Starts the local SPA Studio and JSON API for exploration and playground runs. |
 
 Human-readable CLI output is colorized automatically when stdout/stderr is a TTY. Use
 `--color=always`, `--color=never`, or `--color=auto` to override detection. `NO_COLOR`
 disables color and `FORCE_COLOR` enables it. `--json` output is always plain machine-readable
 JSON without ANSI escape codes, and `--quiet` suppresses human output.
+
+`validate` and `build` print warning diagnostics even when validation succeeds. In `--json`
+mode, successful warning runs include `diagnostics` and `warningCount`. Add
+`--fail-on-warning` to make warning diagnostics exit non-zero; for banking CI this flag is
+mandatory so release gates do not accept rulesets with compiler warnings.
 
 ## Rules project layout
 
@@ -94,7 +99,7 @@ The manifest also drives Studio display metadata:
   "format": "jsonspecs-snapshot",
   "formatVersion": 1,
   "sourceHash": "...",
-  "engine": { "minVersion": "2.1.1" },
+  "engine": { "minVersion": "2.3.1" },
   "artifacts": [],
   "meta": {
     "projectId": "checkout-rules",
@@ -105,7 +110,7 @@ The manifest also drives Studio display metadata:
 }
 ```
 
-`build-info.json` duplicates deployment metadata useful for CI, Docker images, and runtime services: project id/title, ruleset version, engine version, snapshot format/version, source hash, artifact count, entrypoints, and local Node operator packs.
+`build-info.json` duplicates deployment metadata useful for CI, Docker images, and runtime services: project id/title, ruleset version, engine version, snapshot format/version, source hash, artifact count, warning count, entrypoints, and local Node operator packs.
 
 ## Sample tests
 
@@ -212,8 +217,8 @@ npm run verify
 ```json
 {
   "config": {
-    "jsonspecsVersion": "2.1.1",
-    "jsonspecsGitRef": "v2.1.1"
+    "jsonspecsVersion": "2.3.1",
+    "jsonspecsGitRef": "v2.3.1"
   }
 }
 ```
