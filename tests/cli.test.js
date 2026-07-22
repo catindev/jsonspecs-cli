@@ -301,6 +301,13 @@ test("bundled Sandbox creates native v3 playground input", () => {
   assert.match(source, /children:u\.title\|\|u\.description\|\|u\.id/);
 });
 
+test("bundled Sandbox prefixes context field titles with ($)", () => {
+  const source = fs.readFileSync(path.join(__dirname, "../static/assets/index-GkLfNN2H.js"), "utf8");
+  assert.doesNotMatch(source, /параметр из контекста/);
+  assert.match(source, /String\(i\)\.startsWith\("\$context\."\)\?S\.jsx\("span",\{className:"human-context-badge",children:"\(\$\)"\}\):null,S\.jsx\("span",\{className:"human-field",children:i\}\)/);
+  assert.match(source, /e\.isContextField\?S\.jsx\("span",\{className:"human-context-badge",children:"\(\$\)"\}\):null,S\.jsx\("span",\{className:"human-field",children:e\.fieldLabel\}\)/);
+});
+
 test("Sandbox boots and executes a v3 tuple", async (t) => {
   const projectRoot = scaffold();
   const manifestFile = path.join(projectRoot, "manifest.json");
