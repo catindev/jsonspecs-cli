@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.0.0 — 2026-07-22
+
+- Moved the complete CLI workflow to `@jsonspecs/rules` v4 and spec 1.0.0-rc.7.
+- New projects now declare RC.7; RC.6 and older snapshots are rejected by the pinned compiler.
+- Added integration coverage for structural wildcard candidates and exact concrete issue paths.
+- Made nested sample issue projections independent of JSON object key order.
+- Updated release packaging to publish against `@jsonspecs/rules` `^4.0.0`.
+
 ## 3.0.0 — 2026-07-22
 
 - Migrated all commands and Studio to `@jsonspecs/rules` v3 and spec 1.0.0-rc.5.

@@ -6,8 +6,8 @@
 [![Node 20+](https://img.shields.io/badge/Node-20%2B-green)](https://nodejs.org/)
 
 Authoring, validation, build, sample-test, and local Sandbox CLI for
-[`@jsonspecs/rules`](https://www.npmjs.com/package/@jsonspecs/rules) v3 projects.
-Version 3 builds snapshots for `jsonspecs/spec` **1.0.0-rc.5** and
+[`@jsonspecs/rules`](https://www.npmjs.com/package/@jsonspecs/rules) v4 projects.
+Version 4 builds snapshots for `jsonspecs/spec` **1.0.0-rc.7** and
 `formatVersion: 2`.
 
 ## Install
@@ -28,8 +28,8 @@ jsonspecs sandbox
 
 | Command | Purpose |
 | --- | --- |
-| `init` | Creates a minimal RC.5 authoring project, samples, and an empty local operator pack. |
-| `validate` | Builds the in-memory fv2 snapshot and runs the rules v3 compiler. |
+| `init` | Creates a minimal RC.7 authoring project, samples, and an empty local operator pack. |
+| `validate` | Builds the in-memory fv2 snapshot and runs the rules v4 compiler. |
 | `test` | Runs every `samples/*.json` tuple against the same compiled snapshot. |
 | `build` | Writes the validated `snapshot.json` and external `build-info.json`. |
 | `sandbox` | Starts the local exploration and playground UI. |
@@ -79,7 +79,7 @@ have `issue`.
 
 ```json
 {
-  "specVersion": "1.0.0-rc.5",
+  "specVersion": "1.0.0-rc.7",
   "exports": ["entrypoints.customer.validation"],
   "project": {
     "id": "customer-rules",
@@ -104,14 +104,14 @@ data and do not affect `sourceHash`.
 {
   "format": "jsonspecs-snapshot",
   "formatVersion": 2,
-  "specVersion": "1.0.0-rc.5",
+  "specVersion": "1.0.0-rc.7",
   "exports": ["entrypoints.customer.validation"],
   "artifacts": {},
   "sourceHash": "..."
 }
 ```
 
-`sourceHash` is calculated by `@jsonspecs/rules` over the final snapshot using the RC.5
+`sourceHash` is calculated by `@jsonspecs/rules` over the final snapshot using the RC.7
 JCS formula. The CLI validates that exact object before writing it. `build-info.json`
 stores deployment metadata outside the executable format: project version, runtime
 version, build time, exports, counts, and the same source hash. Every external operator
@@ -155,7 +155,7 @@ The CLI is operator-agnostic. It loads only modules explicitly declared by the p
 
 Both npm packages and local paths are resolved relative to the rules project's
 `manifest.json`, not relative to the global CLI installation. Each module exports the
-rules v3 operator map directly:
+rules v4 operator map directly:
 
 ```js
 module.exports = {
@@ -179,9 +179,9 @@ An operator receives values resolved by core and returns exactly `PASS`, `FAIL`,
 ## Sandbox
 
 `jsonspecs sandbox` serves the bundled SPA on `127.0.0.1` by default. Playground requests
-use the native v3 tuple with a top-level `pipelineId`. The backend uses a
-presentation adapter over rules v3 introspection: it classifies string steps, renders
-native RC.5 `when` expressions, lists `exports`, and executes the compiled fv2 snapshot.
+use the native v4 tuple with a top-level `pipelineId`. The backend uses a
+presentation adapter over rules v4 introspection: it classifies string steps, renders
+native RC.7 `when` expressions, lists `exports`, and executes the compiled fv2 snapshot.
 Sandbox is a local authoring tool and must not be exposed as a production service.
 
 ## Development
@@ -197,7 +197,7 @@ npm run verify
 ```
 
 `package.json.config.rulesVersion` and `rulesGitRef` pin the coordinated rules release.
-The release packer replaces the local `file:../rules` dependency with `^3.0.0`, then
+The release packer replaces the local `file:../rules` dependency with `^4.0.0`, then
 tests the real packed CLI in a clean CommonJS consumer.
 
 ## Release

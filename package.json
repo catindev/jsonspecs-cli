@@ -1,6 +1,6 @@
 {
   "name": "jsonspecs-cli",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "private": true,
   "description": "Authoring, validation, snapshot build, sample-test, and local sandbox CLI for jsonspecs projects",
   "type": "commonjs",
@@ -20,8 +20,8 @@
     "prepublishOnly": "node scripts/prevent-direct-publish.js"
   },
   "config": {
-    "rulesVersion": "3.0.0",
-    "rulesGitRef": "v3.0.0"
+    "rulesVersion": "4.0.0",
+    "rulesGitRef": "v4.0.0"
   },
   "dependencies": {
     "@jsonspecs/rules": "file:../rules",

@@ -55,14 +55,14 @@ function captureConsole(fn) {
   return { value, stdout: stdout.join("\n"), stderr: stderr.join("\n") };
 }
 
-test("init creates an RC.5 authoring project", () => {
+test("init creates an RC.7 authoring project", () => {
   const projectRoot = scaffold();
   const manifest = read(path.join(projectRoot, "manifest.json"));
   const rule = read(path.join(projectRoot, "rules/library/order_amount_required.json"));
   const pipeline = read(path.join(projectRoot, "rules/entrypoints/order_validation.json"));
   const sample = read(path.join(projectRoot, "samples/order.ok.json"));
 
-  assert.equal(manifest.specVersion, "1.0.0-rc.5");
+  assert.equal(manifest.specVersion, "1.0.0-rc.7");
   assert.deepEqual(manifest.exports, ["entrypoints.order.validation"]);
   assert.equal(rule.role, undefined);
   assert.equal(rule.issue.code, "ORDER.AMOUNT.REQUIRED");
@@ -79,7 +79,7 @@ test("validate and build use the same fv2 snapshot", () => {
   const snapshot = read(path.join(projectRoot, "dist/snapshot.json"));
   const buildInfo = read(path.join(projectRoot, "dist/build-info.json"));
   assert.equal(snapshot.formatVersion, 2);
-  assert.equal(snapshot.specVersion, "1.0.0-rc.5");
+  assert.equal(snapshot.specVersion, "1.0.0-rc.7");
   assert.equal(Array.isArray(snapshot.artifacts), false);
   assert.equal(snapshot.artifacts["library.order.amount_required"].id, undefined);
   assert.equal(rules.computeSourceHash(snapshot), snapshot.sourceHash);
@@ -95,6 +95,47 @@ test("validate and build use the same fv2 snapshot", () => {
     digest: buildInfo.operatorPacks[0].digest,
   });
   assert.match(buildInfo.operatorPacks[0].digest, /^sha256:[0-9a-f]{64}$/);
+});
+
+test("CLI 4 rejects snapshots from the previous specification release", () => {
+  const projectRoot = scaffold();
+  const manifestFile = path.join(projectRoot, "manifest.json");
+  const manifest = read(manifestFile);
+  manifest.specVersion = "1.0.0-rc.6";
+  write(manifestFile, manifest);
+
+  const output = captureConsole(() => runValidate(projectRoot, { json: true, color: "never" }));
+  assert.equal(output.value, 1);
+  const diagnostics = JSON.parse(output.stdout);
+  assert.equal(diagnostics[0]?.code, "UNSUPPORTED_SPEC_VERSION");
+});
+
+test("CLI 4 preserves RC.7 structural and exact wildcard issue paths", () => {
+  const projectRoot = scaffold();
+  const ruleFile = path.join(projectRoot, "rules/library/order_amount_required.json");
+  const rule = read(ruleFile);
+  rule.field = "order.items[*].sku";
+  rule.aggregate = { mode: "ALL", onEmpty: "SKIP", issueMode: "EACH" };
+  write(ruleFile, rule);
+
+  const bundle = buildProject(resolveProject(projectRoot));
+  assert.equal(bundle.validation.ok, true);
+  const result = bundle.engine.runPipeline(bundle.prepared, {
+    pipelineId: "entrypoints.order.validation",
+    payload: { order: { items: [{ sku: "A" }, {}] } },
+  });
+  assert.equal(result.status, "ERROR");
+  assert.equal(result.issues[0]?.field, "order.items[1].sku");
+
+  rule.field = "order.items[*][9007199254740993].sku";
+  write(ruleFile, rule);
+  const exactBundle = buildProject(resolveProject(projectRoot));
+  const exactResult = exactBundle.engine.runPipeline(exactBundle.prepared, {
+    pipelineId: "entrypoints.order.validation",
+    payload: { order: { items: [[]] } },
+  });
+  assert.equal(exactResult.status, "ERROR");
+  assert.equal(exactResult.issues[0]?.field, "order.items[0][9007199254740993].sku");
 });
 
 test("authoring metadata does not change sourceHash", () => {
@@ -147,7 +188,7 @@ test("validation diagnostics retain the source file", () => {
   assert.match(output.stderr, /library\.order\.amount_required/);
 });
 
-test("sample runner uses the v3 top-level pipelineId", () => {
+test("sample runner uses the v4 top-level pipelineId", () => {
   const projectRoot = scaffold();
   assert.equal(runTest(projectRoot, { quiet: true }), 0);
 
@@ -200,6 +241,12 @@ test("sample issue matching is one-to-one", () => {
   );
   assert.equal(failures.length, 1);
   assert.match(failures[0], /DUPLICATE/);
+
+  const reorderedDetails = runTest.matchExpectedIssues(
+    [{ code: "NESTED", details: { path: "order.items[0]", counts: { failed: 1, total: 2 } } }],
+    [{ details: { counts: { total: 2, failed: 1 }, path: "order.items[0]" }, code: "NESTED", level: "ERROR" }],
+  );
+  assert.deepEqual(reorderedDetails, []);
 });
 
 test("npm operator packs resolve relative to the rules project", () => {
@@ -284,17 +331,17 @@ test("human output supports ANSI while JSON and quiet stay clean", () => {
   assert.equal(quiet.stderr, "");
 });
 
-test("bin help reports the v3 CLI", () => {
+test("bin help reports the v4 CLI", () => {
   const bin = path.join(__dirname, "..", "bin/jsonspecs.js");
   const result = spawnSync(process.execPath, [bin, "--help", "--color=never"], { encoding: "utf8" });
   assert.equal(result.status, 0);
-  assert.match(result.stdout, /jsonspecs-cli v3\.0\.0/);
+  assert.match(result.stdout, /jsonspecs-cli v4\.0\.0/);
   assert.match(result.stdout, /jsonspecs sandbox/);
   assert.doesNotMatch(result.stdout, /jsonspecs studio/);
   assert.doesNotMatch(result.stdout, /\u001b\[[0-9;]*m/);
 });
 
-test("bundled Sandbox creates native v3 playground input", () => {
+test("bundled Sandbox creates native v4 playground input", () => {
   const source = fs.readFileSync(path.join(__dirname, "../static/assets/index-GkLfNN2H.js"), "utf8");
   assert.match(source, /JSON\.stringify\(\{pipelineId:e,context:\{currentDate:u\},payload:\{\}\}/);
   assert.doesNotMatch(source, /JSON\.stringify\(\{context:\{pipelineId:e,currentDate:u\},payload:\{\}\}/);
@@ -308,7 +355,7 @@ test("bundled Sandbox prefixes context field titles with ($)", () => {
   assert.match(source, /e\.isContextField\?S\.jsx\("span",\{className:"human-context-badge",children:"\(\$\)"\}\):null,S\.jsx\("span",\{className:"human-field",children:e\.fieldLabel\}\)/);
 });
 
-test("Sandbox boots and executes a v3 tuple", async (t) => {
+test("Sandbox boots and executes a v4 tuple", async (t) => {
   const projectRoot = scaffold();
   const manifestFile = path.join(projectRoot, "manifest.json");
   const manifest = read(manifestFile);
@@ -413,7 +460,7 @@ module.exports = {
   assert.equal(execute(), "OK");
 });
 
-test("Sandbox renders native RC.5 when and condition steps", () => {
+test("Sandbox renders native RC.7 when and condition steps", () => {
   const artifacts = new Map([
     ["library.compare", { id: "library.compare", type: "rule", field: "order.amount", value_field: "$context.minimum" }],
     ["library.present", { id: "library.present", type: "rule" }],

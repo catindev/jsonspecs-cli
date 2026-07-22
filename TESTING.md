@@ -10,7 +10,7 @@ npm run verify
 
 The unit/integration suite covers:
 
-- RC.5 scaffold generation and top-level sample `pipelineId`;
+- RC.7 scaffold generation and top-level sample `pipelineId`;
 - a single fv2 build path shared by validate, build, test, and Sandbox;
 - JCS `sourceHash` and compileSnapshot acceptance;
 - authoring metadata exclusion from the executable hash;
@@ -20,7 +20,7 @@ The unit/integration suite covers:
   package digests, and recursive local hot reload;
 - recursive sample discovery, required expectations, one-to-one issue matching, and
   sample coverage for every export;
-- Sandbox exports, human-readable pipeline titles, native v3 playground input, native
+- Sandbox exports, human-readable pipeline titles, native v4 playground input, native
   `when` rendering, playground execution, and SPA fallback;
 - color, JSON, quiet, and warning-gate output modes.
 
