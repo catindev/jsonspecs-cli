@@ -187,6 +187,8 @@ An operator receives values resolved by core and returns exactly `PASS`, `FAIL`,
 use the native v4 tuple with a top-level `pipelineId`. The backend uses a
 presentation adapter over rules v4 introspection: it classifies string steps, renders
 native RC.7 `when` expressions, lists `exports`, and executes the compiled fv2 snapshot.
+Artifact pages include a read-only “Код артефакта” tab with the complete formatted
+authoring JSON and syntax highlighting.
 `context.pipelineId` does not select a pipeline and remains an ordinary context field.
 Sandbox is a local authoring tool and must not be exposed as a production service.
 
@@ -203,7 +205,7 @@ npm run verify
 ```
 
 `package.json.config.rulesVersion` and `rulesGitRef` pin the coordinated rules release.
-The release packer replaces the local `file:../rules` dependency with `^4.0.0`, then
+The release packer replaces the local `file:../rules` dependency with `^4.0.1`, then
 tests the real packed CLI in a clean CommonJS consumer.
 
 ## Release

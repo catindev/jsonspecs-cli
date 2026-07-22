@@ -23,7 +23,8 @@ The unit/integration suite covers:
 - recursive sample discovery, required expectations, one-to-one issue matching, and
   sample coverage for every export;
 - Sandbox exports, human-readable pipeline titles, native v4 playground input, native
-  `when` rendering, rejection of `context.pipelineId`, playground execution, and SPA fallback;
+  `when` rendering, complete authoring JSON tabs, rejection of `context.pipelineId`,
+  playground execution, and SPA fallback;
 - color, JSON, quiet, and warning-gate output modes.
 
 `npm run test:pack` additionally creates real rules and CLI tarballs, installs both in a

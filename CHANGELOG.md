@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.0.2 — 2026-07-22
+
+- Added a read-only artifact-code tab with complete formatted authoring JSON and syntax
+  highlighting to rule, condition, dictionary, and pipeline pages in Sandbox.
+
 ## 4.0.1 — 2026-07-22
 
 - Added one strict I-JSON parser for manifests, artifacts, samples, and Sandbox requests;

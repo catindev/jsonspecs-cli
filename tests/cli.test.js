@@ -38,6 +38,13 @@ function write(file, value) {
   fs.writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
 }
 
+function readBundledAsset(extension) {
+  const assetsDir = path.join(__dirname, "../static/assets");
+  const files = fs.readdirSync(assetsDir).filter((file) => file.endsWith(extension));
+  assert.equal(files.length, 1, `expected one bundled ${extension} asset`);
+  return fs.readFileSync(path.join(assetsDir, files[0]), "utf8");
+}
+
 function captureConsole(fn) {
   const originalLog = console.log;
   const originalError = console.error;
@@ -373,27 +380,39 @@ test("bin help reports the v4 CLI", () => {
   const bin = path.join(__dirname, "..", "bin/jsonspecs.js");
   const result = spawnSync(process.execPath, [bin, "--help", "--color=never"], { encoding: "utf8" });
   assert.equal(result.status, 0);
-  assert.match(result.stdout, /jsonspecs-cli v4\.0\.1/);
+  assert.match(result.stdout, /jsonspecs-cli v4\.0\.2/);
   assert.match(result.stdout, /jsonspecs sandbox/);
   assert.doesNotMatch(result.stdout, /jsonspecs studio/);
   assert.doesNotMatch(result.stdout, /\u001b\[[0-9;]*m/);
 });
 
 test("bundled Sandbox creates native v4 playground input", () => {
-  const source = fs.readFileSync(path.join(__dirname, "../static/assets/index-GkLfNN2H.js"), "utf8");
+  const source = readBundledAsset(".js");
   assert.match(source, /JSON\.stringify\(\{pipelineId:e,context:\{currentDate:u\},payload:\{\}\}/);
   assert.doesNotMatch(source, /JSON\.stringify\(\{context:\{pipelineId:e,currentDate:u\},payload:\{\}\}/);
   assert.doesNotMatch(source, /\.context\?\.pipelineId/);
   assert.doesNotMatch(source, /delete [A-Za-z_$][\w$]*\.context\.pipelineId/);
   assert.match(source, /pipelineId обязателен на верхнем уровне/);
-  assert.match(source, /children:u\.title\|\|u\.description\|\|u\.id/);
+  assert.match(source, /children:([A-Za-z_$][\w$]*)\.title\|\|\1\.description\|\|\1\.id/);
 });
 
 test("bundled Sandbox prefixes context field titles with ($)", () => {
-  const source = fs.readFileSync(path.join(__dirname, "../static/assets/index-GkLfNN2H.js"), "utf8");
+  const source = readBundledAsset(".js");
   assert.doesNotMatch(source, /параметр из контекста/);
-  assert.match(source, /String\(i\)\.startsWith\("\$context\."\)\?S\.jsx\("span",\{className:"human-context-badge",children:"\(\$\)"\}\):null,S\.jsx\("span",\{className:"human-field",children:i\}\)/);
-  assert.match(source, /e\.isContextField\?S\.jsx\("span",\{className:"human-context-badge",children:"\(\$\)"\}\):null,S\.jsx\("span",\{className:"human-field",children:e\.fieldLabel\}\)/);
+  assert.match(source, /String\(i\)\.startsWith\("\$context\."\)\?[A-Za-z_$][\w$]*\.jsx\("span",\{className:"human-context-badge",children:"\(\$\)"\}\):null,[A-Za-z_$][\w$]*\.jsx\("span",\{className:"human-field",children:i\}\)/);
+  assert.match(source, /e\.isContextField\?[A-Za-z_$][\w$]*\.jsx\("span",\{className:"human-context-badge",children:"\(\$\)"\}\):null,[A-Za-z_$][\w$]*\.jsx\("span",\{className:"human-field",children:e\.fieldLabel\}\)/);
+});
+
+test("bundled Sandbox shows formatted source JSON for every artifact type", () => {
+  const source = readBundledAsset(".js");
+  const styles = readBundledAsset(".css");
+
+  assert.match(source, /Код артефакта/);
+  assert.match(source, /JSON\.stringify\([^,]+,null,2\)/);
+  assert.match(source, /readOnly:!0/);
+  assert.match(source, /viewportMargin:1\/0/);
+  assert.match(source, /\/pipelines\/:id\/code/);
+  assert.match(styles, /\.artifact-code-panel/);
 });
 
 test("Sandbox boots and executes a v4 tuple", async (t) => {
@@ -425,6 +444,10 @@ test("Sandbox boots and executes a v4 tuple", async (t) => {
   assert.deepEqual(entrypoints.items.map((item) => item.id), ["entrypoints.order.validation"]);
   const pipeline = await fetch(`${base}/api/pipelines/entrypoints.order.validation`).then((response) => response.json());
   assert.equal(pipeline.pipeline.description, "Проверка заказа");
+  assert.deepEqual(
+    pipeline.source,
+    read(path.join(projectRoot, "rules/entrypoints/order_validation.json")),
+  );
   const response = await fetch(`${base}/api/playground/run`, {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -476,6 +499,11 @@ test("Sandbox boots and executes a v4 tuple", async (t) => {
   const rule = await fetch(`${base}/api/rules/library.order.amount_required`).then((response) => response.json());
   assert.equal(rule.artifact.issue.code, "ORDER.AMOUNT.REQUIRED");
   assert.equal(rule.artifact.code, "ORDER.AMOUNT.REQUIRED");
+  assert.deepEqual(
+    rule.source,
+    read(path.join(projectRoot, "rules/library/order_amount_required.json")),
+  );
+  assert.equal(rule.source.code, undefined);
 
   const deepLink = await fetch(`${base}/rules/library.order.amount_required`);
   assert.equal(deepLink.status, 200);
